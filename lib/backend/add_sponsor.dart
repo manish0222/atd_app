@@ -18,6 +18,21 @@ class addSponsor extends StatefulWidget {
 }
 
 class _addSponsorState extends State<addSponsor> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late final String _uid;
+  void initState() {
+    super.initState();
+    setState(() {
+      getdata();
+    });
+  }
+
+  void getdata() {
+    User? user = _auth.currentUser;
+    _uid = user!.uid;
+    print("the user id is " + _uid);
+  }
+
   //Map
   @override
   TextEditingController _emailTextController = TextEditingController();
@@ -74,28 +89,49 @@ class _addSponsorState extends State<addSponsor> {
                 const SizedBox(
                   height: 20,
                 ),
-                addSponsorButton(context, () {
+                addSponsorButton(context, () async {
                   Map<String, String> data = {
                     'Name': _NameTextController.text,
                     'Email-id': _emailTextController.text,
                     'Phone': _PhoneTextController.text,
                     'Rollnum': _RollNumTextController.text,
                   };
-                  FirebaseFirestore.instance
-                      .collection("users")
-                      .add(data)
-                      .then((value) {
-                    print("Created New user");
-                    map['Name'] = _NameTextController.text.toString();
-                    map['Email-id'] = _emailTextController.text.toString();
-                    map['Phone'] = _PhoneTextController.text.toString();
-                    map['Rollnum'] = _RollNumTextController.text.toString();
-                    print("the roll num is " + map['Rollnum'].toString());
+                  try {
+                    // Get the reference to the "users" collection in Firestore
+                    CollectionReference usersCollection =
+                        FirebaseFirestore.instance.collection('users');
+
+                    // Create a new document in the "users" collection with the user's UID
+                    await usersCollection.doc(_uid).set({
+                      'Name': data['Name'],
+                      'Email-id': data['Email-id'],
+                      'Rollnum': data['Rollnum'],
+                      'Phone': data['Phone'],
+                      // Add any additional fields as needed
+                    });
+
+                    print('User data added to Firestore successfully' +
+                        data['Rollnum']!);
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => HomeScreen()));
-                  }).onError((error, stackTrace) {
-                    print("Error ${error.toString()}");
-                  });
+                  } catch (e) {
+                    print('Error adding user data to Firestore: $e');
+                  }
+                  // FirebaseFirestore.instance
+                  //     .collection("users")
+                  //     .add(data)
+                  //     .then((value) {
+                  //   print("Created New user");
+                  //   map['Name'] = _NameTextController.text.toString();
+                  //   map['Email-id'] = _emailTextController.text.toString();
+                  //   map['Phone'] = _PhoneTextController.text.toString();
+                  //   map['Rollnum'] = _RollNumTextController.text.toString();
+                  //   print("the roll num is " + map['Rollnum'].toString());
+                  //   Navigator.push(context,
+                  //       MaterialPageRoute(builder: (context) => HomeScreen()));
+                  // }).onError((error, stackTrace) {
+                  //   print("Error ${error.toString()}");
+                  // });
                   // FirebaseAuth.instance.createUserWithEmailAndPassword(
                   //   email: _emailTextController.text,
                   //   password: _passwordTextController.text

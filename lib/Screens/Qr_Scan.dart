@@ -88,7 +88,7 @@ class _ScanQrState extends State<ScanQr> {
                   context,
                   MaterialPageRoute(
                       builder: ((context) =>
-                          ResultScreen(code: val.toString()))),
+                          ResultScreen(userId: val.toString()))),
                 );
               },
             ),
